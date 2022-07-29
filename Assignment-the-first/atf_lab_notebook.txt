@@ -1,0 +1,68 @@
+26 July 2022
+
+Follow GitHub link and use the template to create a public respository called 'Demultiplex'
+Git clone this repository on talapas in the following pathway: /projects/bgmp/kikegami/bioinfo/Bi622/Demultiplex
+
+Part 1
+    Initial data exploration:
+        within the directory: /projects/bgmp/shared/2017_sequencing
+
+        zcat <filename> to determine which file containts reads and which contain indexes
+            1294_S1_L008_R1_001.fastq.gz - Read 1
+            1294_S1_L008_R2_001.fastq.gz - Index 1
+            1294_S1_L008_R3_001.fastq.gz - Index 2
+            1294_S1_L008_R4_001.fastq.gz - Read 2
+
+        zcat <filename> | head -2 | tail -1 | wc    #determines length of read in each file
+
+        zact <filename> | head -4  #shows phred scores on line 4 encoded in ASCII, phred scores encoding is ASCII+33
+
+27 July 2022
+
+Part 1
+    scp most recent bioinfo module from local computer into Talapas working environment in order to reuse helpful code
+    Generate test_read.fq and tesr_index.fq files to test script on with the following CLI command:
+        zcat <filename> | head -1000000 | tail -20 > ../../kikegami/bioinfo/Bi622/Demultiplex/Assignment-the-first/test_index.fq
+
+    Use previous code to create a python script to create a histogram bar plot of mean quality scores by position for each indec and read file
+    Here it is helpful to use code from ps4, ps5, and bioinfo module
+
+    Write a slurm/wrapper bash script to submit your python job to a node in talapas using the following sbatch commands:
+        #!/bin/bash
+
+        #SBATCH --partition=bgmp       ### Partition (like a queue in PBS)
+        #SBATCH --job-name=atf_p1_r2    ### Job Name/optional
+        #SBATCH --nodes=1               ### Number of nodes needed for the job
+        #SBATCH --ntasks-per-node=1     ### Number of tasks to be launched per Node, optional
+        #SBATCH --account=bgmp          ### Account used for job submission/
+        #SBATCH --cpus-per-task=8
+
+        reference your python code and the augparse arguments needed in this script
+
+        Run this slurm script for every read and index file with the following arguments, do this for each file (hardcode file in slurm scipt and run it for each one):
+            -l (for read files): 101, (for index files): 8
+            -o "r1,r2, i1, or i1"
+            -f: filename
+
+    Determining the number of indexes per file with undetermined bascalls:
+        Index 1, undetermined base calls:
+        command: $ zcat 1294_S1_L008_R2_001.fastq.gz | grep -A1 "^@" | grep -v "^--" | grep -v "^@" | grep "N" | wc -l
+        answer: 3976613
+        Index 2, undetermined base calls:
+        command: $ zcat 1294_S1_L008_R3_001.fastq.gz | grep -A1 "^@" | grep -v "^--" | grep -v "^@" | grep "N" | wc -l
+        answer: 3328051
+
+Part 2
+
+    Create a pseudocode text file and separate it by the prompts in the readme file
+        
+    Create test input FASTQ files r1, r2, r3, and r4. r1 and r4 correspond to biological sequences and r2 and r3 to indexes. crreat 4 records to display the 4 scenarios
+        For indexes: Matching, non-matching(not in index list), poor quality reads (N's in index), hopping
+    Create 3 test output file types (2 files of ceach type to corrrspond to both reads) to contian the following:
+        matched pairs, poor quality + non-matching, and hopping.
+
+        within files, seq headers should have seq number, its index pair (OG index from R2 and rev comp of index in R3)
+    
+
+    
+
