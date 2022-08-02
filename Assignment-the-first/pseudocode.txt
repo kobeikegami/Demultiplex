@@ -1,0 +1,69 @@
+Assignment-the-first Pseudocode
+
+The problem:
+    Samples in a multiplexed sequencing job need to be demultiplexed (differentiated by index into respective sample types).
+    Indx hopping needs to be accounted for
+    Paired end reads need to be matched
+
+Informative Output:
+    3 file types containing numbers of the following:
+        Matched paired end reads with matching indexes ( index and its rev comp)
+        Indexes that are not in the barcode/index list, indexes with undetermined base calls (N's in the index base sequence)
+        Unmatched index pairs
+
+Examples (Unit Tests):
+    Please see input FASTQ files inside the TEST-input_FASTQ directory
+
+Algorithm Using Pseudocode:
+
+    -For each input file:
+        -Read all files in increments of 4 lines to denote individual records
+        -Go record by record and examine the sequence line of r2 and r3 inputs in order to sort them by type
+            -Unknown output: record sets with poor quality indexes (contain an N for undetermined base call) have their r1 and r4 record put into two matching files of a single file type
+                -r1 and r4 seq headers are modified to include the r2 index and the rev comp of the r3 index
+            -Unkown output: record sets with an r2 index that is not found within the index list have their r1 and r4 record put into two matching files of a single file type (same as above)
+                -r1 and r4 seq headers are modified to include the r2 index and the rev comp of the r3 index
+            Hopped output: record sets with the correct r2 index but a non-matching r3 index have have their r1 and r4 record put into two matching files of a single file type (different from above)
+                -r1 and r4 seq headers are modified to include the r2 index and the rev comp of the r3 index
+            Matched output: record sets with an r2 index in the index list and a matching r3 have their r1 and r4 record put into two matching files of a single file type (different from above)
+                -r1 and r4 seq headers are modified to include the r2 index and the rev comp of the r3 index 
+
+High Level Functions:
+
+    Reverse compliment generator
+        ```takes index of the r3 record and generates its revers compliment by reversing the index character order and then generating the complimentary base sequence```
+        variables: 
+            index - the 2nd line of every record
+            bases - "ACGTN"
+        parameters:
+            index length - 8
+        Test: 
+            provide a sample r3 file and have it output a reverse compliment of the index and compare to the index of the test file
+
+    Phredscore converter (already built convertphred)
+        ```converts ASCII score in 4th line of a record to its corresponding Q score)```
+        phredscore is the 4th line in the record
+        parameters are range of ASCII characters and their respective q score values
+        Test: input: I output: 40
+
+    Output writing Functions
+        ```categorizes index pairs in the 3 file types and writes them to the 2 correspionding files of each type. seq header lines modified to contain the orginal r2 record index and rev comp of r3 index
+        modified r1 record put into a file and modified r4 record put into its complimentary file```
+        variables:
+            -r1 record
+            -r4 record
+            -r2 index
+            -r3 index rev comp
+        test:
+            provide 4 unit test files with known epected output files and write output to new files and compare the file contents with CLI commands
+
+
+    Function to parse 4 files in parallel by record
+        ```reads each of the 4 input files simultaneously in incriments of each 4 line record so that index and read pairs are group together for the downstream analyses```
+        variables:
+            -r1 file
+            -r2 file
+            -r3 file
+            -r4 file
+        Test:
+            ???
